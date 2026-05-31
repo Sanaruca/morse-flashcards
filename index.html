@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Morse Flashcards</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+
+    <header>
+      <h1>Morse</h1>
+      <span id="level-indicator">Nivel 1</span>
+    </header>
+
+    <main>
+      <div id="card">
+        <div class="card-face card-front">
+          <div class="flip-hint">↺</div>
+          <div id="card-letter"></div>
+          <div id="input-display"></div>
+          <div id="correct-morse" class="hidden"></div>
+        </div>
+        <div class="card-face card-back">
+          <div class="back-label">Respuesta</div>
+          <div id="card-answer"></div>
+        </div>
+      </div>
+
+      <button id="flip-btn">↺ Ver respuesta</button>
+
+      <div id="telegraph-btn">
+        <span id="btn-label">PULSA</span>
+      </div>
+
+      <p id="instruction">Presiona la barra espaciadora o el botón para enviar código Morse. Pulsación corta = punto (·), pulsación larga = raya (—).</p>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
