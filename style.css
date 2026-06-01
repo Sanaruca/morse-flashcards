@@ -4,11 +4,61 @@
   padding: 0;
 }
 
+:root {
+  color-scheme: light;
+  --bg-body: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-progress: #e5e7eb;
+  --bg-level: #e5e7eb;
+  --text-primary: #1f2937;
+  --text-heading: #374151;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-hint: #c4c8d0;
+  --flip-color: #a5b4fc;
+  --flip-hover-color: #818cf8;
+  --flip-hover-bg: rgba(99,102,241,0.08);
+  --primary: #6366f1;
+  --primary-light: #a5b4fc;
+  --success-bg: #ecfdf5;
+  --success-color: #10b981;
+  --error-bg: #fef2f2;
+  --error-color: #ef4444;
+  --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 12px 24px -4px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-body: #0f172a;
+  --bg-card: #1e293b;
+  --bg-progress: #334155;
+  --bg-level: #334155;
+  --text-primary: #e2e8f0;
+  --text-heading: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-hint: #475569;
+  --flip-color: #64748b;
+  --flip-hover-color: #94a3b8;
+  --flip-hover-bg: rgba(148,163,184,0.1);
+  --primary: #818cf8;
+  --primary-light: #a5b4fc;
+  --success-bg: #064e3b;
+  --success-color: #34d399;
+  --error-bg: #450a0a;
+  --error-color: #f87171;
+  --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 12px 24px -4px rgba(0,0,0,0.6);
+}
+
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #f0f2f5;
-  color: #1f2937;
+  background: var(--bg-body);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
@@ -28,7 +78,7 @@ html, body {
 #progress-container {
   width: 100%;
   height: 8px;
-  background: #e5e7eb;
+  background: var(--bg-progress);
   border-radius: 9999px;
   margin-top: 12px;
   overflow: hidden;
@@ -55,14 +105,43 @@ header h1 {
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #374151;
+  color: var(--text-heading);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  font-family: inherit;
+  border-radius: 9999px;
+  color: var(--text-secondary);
+}
+
+#theme-toggle svg {
+  display: block;
+}
+
+#theme-toggle:hover {
+  background: rgba(128,128,128,0.1);
 }
 
 #level-indicator {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
-  background: #e5e7eb;
+  color: var(--text-secondary);
+  background: var(--bg-level);
   padding: 4px 12px;
   border-radius: 9999px;
 }
@@ -81,13 +160,13 @@ main {
 #card {
   width: 100%;
   max-width: 360px;
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06), 0 12px 24px -4px rgba(0,0,0,0.1);
+  box-shadow: var(--card-shadow);
   perspective: 1000px;
   transform-style: preserve-3d;
   border: 2px solid transparent;
-  transition: transform 0.5s ease, border-color 0.3s ease, background 0.3s ease;
+  transition: transform 0.5s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   display: grid;
 }
@@ -97,15 +176,15 @@ main {
 }
 
 #card.success {
-  border-color: #10b981;
-  background: #ecfdf5;
+  border-color: var(--success-color);
+  background-color: var(--success-bg);
   animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: default;
 }
 
 #card.error {
-  border-color: #ef4444;
-  background: #fef2f2;
+  border-color: var(--error-color);
+  background-color: var(--error-bg);
   animation: shake 0.5s ease;
   cursor: default;
 }
@@ -150,10 +229,10 @@ main {
   top: 8px;
   right: 12px;
   font-size: 0.9rem;
-  color: #c4c8d0;
+  color: var(--text-hint);
   pointer-events: none;
   animation: hintPulse 2s ease-in-out infinite;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, color 0.3s ease;
 }
 
 #card.flipped .flip-hint,
@@ -171,7 +250,7 @@ main {
   background: none;
   border: none;
   font-size: 0.8rem;
-  color: #a5b4fc;
+  color: var(--flip-color);
   font-weight: 600;
   cursor: pointer;
   padding: 6px 16px;
@@ -183,8 +262,8 @@ main {
 }
 
 #flip-btn:hover {
-  color: #818cf8;
-  background: rgba(99, 102, 241, 0.08);
+  color: var(--flip-hover-color);
+  background: var(--flip-hover-bg);
 }
 
 #flip-btn:active {
@@ -201,17 +280,17 @@ main {
   font-size: 4rem;
   font-weight: 800;
   line-height: 1;
-  color: #1f2937;
+  color: var(--text-primary);
   transition: color 0.3s ease;
   letter-spacing: -0.03em;
 }
 
 #card-letter.success {
-  color: #10b981;
+  color: var(--success-color);
 }
 
 #card-letter.error {
-  color: #ef4444;
+  color: var(--error-color);
 }
 
 #input-display {
@@ -232,13 +311,13 @@ main {
 
 .symbol-dot {
   font-size: 1.5rem;
-  color: #6366f1;
+  color: var(--primary);
   line-height: 1;
 }
 
 .symbol-dash {
   font-size: 1.5rem;
-  color: #6366f1;
+  color: var(--primary);
   letter-spacing: 0.1em;
   line-height: 1;
 }
@@ -251,7 +330,7 @@ main {
 
 #correct-morse {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-weight: 500;
   letter-spacing: 0.05em;
 }
@@ -262,7 +341,7 @@ main {
 
 .back-label {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -275,7 +354,7 @@ main {
   gap: 10px;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #6366f1;
+  color: var(--primary);
   letter-spacing: 0.05em;
   line-height: 1;
   flex-wrap: wrap;
@@ -292,14 +371,14 @@ main {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #6366f1;
+  background: var(--primary);
 }
 
 .answer-symbol-dash {
   width: 48px;
   height: 18px;
   border-radius: 9px;
-  background: #6366f1;
+  background: var(--primary);
 }
 
 #telegraph-btn {
@@ -337,7 +416,7 @@ main {
 
 #instruction {
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   text-align: center;
   line-height: 1.4;
   max-width: 320px;
@@ -345,13 +424,13 @@ main {
 }
 
 #instruction.success {
-  color: #10b981;
+  color: var(--success-color);
   font-weight: 600;
   font-size: 0.9rem;
 }
 
 #instruction.error {
-  color: #ef4444;
+  color: var(--error-color);
   font-weight: 600;
   font-size: 0.9rem;
 }
