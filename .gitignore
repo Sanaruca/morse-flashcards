@@ -4,5 +4,3 @@ node_modules/
 backend/server
 backend/morse-server
 *.db
-*.tar.gz
-*.zip
