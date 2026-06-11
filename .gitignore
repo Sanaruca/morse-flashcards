@@ -1,2 +1,8 @@
 node_modules/
 .DS_Store
+.env
+backend/server
+backend/morse-server
+*.db
+*.tar.gz
+*.zip

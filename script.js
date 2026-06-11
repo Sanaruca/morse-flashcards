@@ -23,6 +23,21 @@ const LEARNING_ORDER = [
   ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 ];
 
+const ACHIEVEMENTS = {
+  primer_nivel:    { nombre: 'Primeros Pasos',     desc: 'Completa el Nivel 1',               icono: '\u{1F31F}' },
+  nivel_2:         { nombre: 'En Progreso',         desc: 'Completa el Nivel 2',               icono: '\u{1F4C8}' },
+  nivel_3:         { nombre: 'Comunicador',         desc: 'Completa el Nivel 3',               icono: '\u{1F5E3}\uFE0F' },
+  nivel_4:         { nombre: 'Experto',             desc: 'Completa el Nivel 4',               icono: '\u{1F3AF}' },
+  nivel_5:         { nombre: 'Casi un Maestro',     desc: 'Completa el Nivel 5',               icono: '\u{1F51D}' },
+  todos_niveles:   { nombre: 'Gran Maestro Morse',  desc: 'Completa todos los niveles',        icono: '\u{1F3C6}' },
+  racha_5:         { nombre: 'Racha',               desc: '5 aciertos seguidos',               icono: '\u{1F525}' },
+  racha_10:        { nombre: 'Imparable',           desc: '10 aciertos seguidos',              icono: '\u26A1' },
+  nivel_perfecto:  { nombre: 'Perfecto',            desc: 'Completa un nivel sin errores',     icono: '\u{1F48E}' },
+  primer_acierto:  { nombre: 'Primer Intento',      desc: 'Acierta tu primera letra',          icono: '\u{1F3AF}' },
+};
+
+const API_BASE = '/api';
+
 const state = {
   availableLetters: [],
   activeDeck: [],
@@ -36,8 +51,17 @@ const state = {
   isEvaluating: false,
   currentLevel: 0,
   isLocked: false,
-  isFlipped: false
+  isFlipped: false,
+  currentStreak: 0,
+  levelErrors: 0,
+  totalCorrect: 0,
+  totalAttempts: 0,
+  bestStreak: 0,
+  hasCorrectAnswer: false
 };
+
+let token = localStorage.getItem('token');
+let userData = null;
 
 const $ = s => document.querySelector(s);
 const cardLetter = $('#card-letter');
@@ -127,6 +151,15 @@ class MorseAudio {
     this.tone(392, 0.18, now);
     this.tone(330, 0.25, now + 0.14);
   }
+
+  playAchievement() {
+    this.ensure();
+    const now = this.ctx.currentTime;
+    this.tone(523, 0.1, now);
+    this.tone(659, 0.1, now + 0.1);
+    this.tone(784, 0.1, now + 0.2);
+    this.tone(1047, 0.3, now + 0.3);
+  }
 }
 
 const audio = new MorseAudio();
@@ -138,9 +171,81 @@ function shuffle(arr) {
   }
 }
 
+// ── Screen navigation ──
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const screen = document.getElementById('screen-' + name);
+  if (screen) screen.classList.remove('hidden');
+}
+
+// ── API helpers ──
+
+async function apiFetch(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (token) {
+    headers['Authorization'] = 'Bearer ' + token;
+  }
+  const res = await fetch(API_BASE + path, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error del servidor');
+  return data;
+}
+
+// ── Auth ──
+
+function isLoggedIn() {
+  return !!token && !!userData;
+}
+
+function saveToken(t) {
+  token = t;
+  localStorage.setItem('token', t);
+}
+
+function clearAuth() {
+  token = null;
+  userData = null;
+  localStorage.removeItem('token');
+}
+
+async function tryAutoLogin() {
+  if (!token) return false;
+  try {
+    const data = await apiFetch('/auth/yo');
+    userData = data;
+    return true;
+  } catch {
+    clearAuth();
+    return false;
+  }
+}
+
+// ── Game init ──
+
 function initGame() {
   state.currentLevel = 0;
+  state.currentStreak = 0;
+  state.levelErrors = 0;
+  state.totalCorrect = 0;
+  state.totalAttempts = 0;
+  state.bestStreak = 0;
+  state.hasCorrectAnswer = false;
   loadLevel(0);
+}
+
+function initGameAtLevel(level) {
+  state.currentLevel = 0;
+  state.availableLetters = [];
+  for (let i = 0; i <= level; i++) {
+    if (i >= LEARNING_ORDER.length) break;
+    state.availableLetters = state.availableLetters.concat(LEARNING_ORDER[i]);
+  }
+  state.currentLevel = level;
+  state.currentStreak = 0;
+  state.levelErrors = 0;
+  state.hasCorrectAnswer = false;
+  rebuildDeck();
 }
 
 function loadLevel(level) {
@@ -152,6 +257,7 @@ function loadLevel(level) {
   state.currentLevel = level;
   const newLetters = LEARNING_ORDER[level];
   state.availableLetters = state.availableLetters.concat(newLetters);
+  state.levelErrors = 0;
   rebuildDeck();
 }
 
@@ -161,7 +267,7 @@ function rebuildDeck() {
   state.progress = 0;
   state.totalCards = state.activeDeck.length;
   updateProgressBar();
-  levelIndicator.textContent = `Nivel ${state.currentLevel + 1}`;
+  levelIndicator.textContent = 'Nivel ' + (state.currentLevel + 1);
 
   if (state.activeDeck.length > 0) {
     nextCard();
@@ -224,7 +330,7 @@ function addSymbol(symbol) {
   state.userInput += symbol;
 
   const span = document.createElement('span');
-  span.className = `symbol symbol-${symbol === '.' ? 'dot' : 'dash'}`;
+  span.className = 'symbol symbol-' + (symbol === '.' ? 'dot' : 'dash');
   span.textContent = symbol === '.' ? '●' : '─';
   inputDisplay.appendChild(span);
 
@@ -250,21 +356,34 @@ function evaluateInput() {
   }
 }
 
-function handleCorrect() {
+async function handleCorrect() {
   state.isLocked = true;
   card.className = 'success';
   cardLetter.className = 'success';
   audio.playSuccess();
 
   state.progress++;
+  state.currentStreak++;
+  state.totalCorrect++;
+  state.hasCorrectAnswer = true;
+  if (state.currentStreak > state.bestStreak) {
+    state.bestStreak = state.currentStreak;
+  }
   updateProgressBar();
 
   instruction.textContent = '¡Correcto!';
   instruction.className = 'success';
 
+  checkAchievements();
+
   setTimeout(() => {
     if (state.progress >= state.availableLetters.length) {
+      const completedLevel = state.currentLevel;
       loadLevel(state.currentLevel + 1);
+      checkLevelAchievements(completedLevel);
+      if (isLoggedIn()) {
+        saveProgress();
+      }
     } else {
       nextCard();
     }
@@ -277,10 +396,14 @@ function handleError(correct) {
   cardLetter.className = 'error';
   audio.playError();
 
+  state.currentStreak = 0;
+  state.levelErrors++;
+  state.totalAttempts++;
+
   correctMorse.textContent = formatMorse(correct);
   correctMorse.classList.remove('hidden');
 
-  instruction.textContent = `${state.currentCard} → ${formatMorse(correct)}`;
+  instruction.textContent = state.currentCard + ' → ' + formatMorse(correct);
   instruction.className = 'error';
 
   const pos = Math.floor(Math.random() * (state.activeDeck.length + 1));
@@ -297,11 +420,11 @@ function updateProgressBar() {
   const pct = state.totalCards > 0
     ? (state.progress / state.availableLetters.length) * 100
     : 0;
-  progressBar.style.width = `${Math.min(pct, 100)}%`;
+  progressBar.style.width = Math.min(pct, 100) + '%';
 }
 
 function showVictory() {
-  cardLetter.textContent = '🎉';
+  cardLetter.textContent = '\u{1F389}';
   card.className = 'success';
   inputDisplay.innerHTML = '';
   correctMorse.classList.add('hidden');
@@ -309,7 +432,251 @@ function showVictory() {
   levelIndicator.textContent = '¡Completado!';
   progressBar.style.width = '100%';
   flipBtn.style.display = 'none';
+
+  if (isLoggedIn()) {
+    saveProgress();
+    checkAchievements();
+  }
 }
+
+// ── Achievement system ──
+
+let unlockedAchievements = new Set();
+
+async function checkAchievements() {
+  if (!isLoggedIn()) return;
+
+  const checks = [];
+
+  if (state.hasCorrectAnswer) checks.push('primer_acierto');
+  if (state.currentStreak >= 5) checks.push('racha_5');
+  if (state.currentStreak >= 10) checks.push('racha_10');
+
+  for (const clave of checks) {
+    if (!unlockedAchievements.has(clave)) {
+      await unlockAchievement(clave);
+    }
+  }
+}
+
+async function checkLevelAchievements(level) {
+  if (!isLoggedIn()) return;
+
+  const levelChecks = {
+    0: 'primer_nivel',
+    1: 'nivel_2',
+    2: 'nivel_3',
+    3: 'nivel_4',
+    4: 'nivel_5',
+  };
+
+  const clave = levelChecks[level];
+  if (clave && !unlockedAchievements.has(clave)) {
+    await unlockAchievement(clave);
+  }
+
+  if (level === LEARNING_ORDER.length - 1 && !unlockedAchievements.has('todos_niveles')) {
+    await unlockAchievement('todos_niveles');
+  }
+
+  if (state.levelErrors === 0 && !unlockedAchievements.has('nivel_perfecto')) {
+    await unlockAchievement('nivel_perfecto');
+  }
+}
+
+async function unlockAchievement(clave) {
+  try {
+    await apiFetch('/logros/desbloquear', {
+      method: 'POST',
+      body: JSON.stringify({ clave_logro: clave }),
+    });
+    unlockedAchievements.add(clave);
+    audio.playAchievement();
+    showAchievementNotification(clave);
+  } catch (e) {
+    // silently fail
+  }
+}
+
+function showAchievementNotification(clave) {
+  const a = ACHIEVEMENTS[clave];
+  if (!a) return;
+  const div = document.createElement('div');
+  div.className = 'achievement-toast';
+  div.innerHTML = '<div class="toast-icon">' + a.icono + '</div><div class="toast-text"><div class="toast-label">¡Logro desbloqueado!</div><div class="toast-name">' + a.nombre + '</div></div>';
+  document.body.appendChild(div);
+  requestAnimationFrame(() => div.classList.add('show'));
+  setTimeout(() => {
+    div.classList.remove('show');
+    setTimeout(() => div.remove(), 400);
+  }, 3500);
+}
+
+async function loadAchievements() {
+  if (!isLoggedIn()) return;
+  try {
+    const logros = await apiFetch('/logros');
+    unlockedAchievements = new Set();
+    for (const l of logros) {
+      if (l.desbloqueado) unlockedAchievements.add(l.clave);
+    }
+  } catch {
+    // silently fail
+  }
+}
+
+// ── Progress ──
+
+async function saveProgress() {
+  if (!isLoggedIn()) return;
+  try {
+    await apiFetch('/progreso', {
+      method: 'POST',
+      body: JSON.stringify({
+        nivel_actual: state.currentLevel,
+        letras_completadas: state.availableLetters.join(','),
+        total_aciertos: state.totalCorrect,
+        total_intentos: state.totalAttempts,
+        mejor_racha: state.bestStreak,
+      }),
+    });
+  } catch {
+    // silently fail
+  }
+}
+
+async function loadProgress() {
+  if (!isLoggedIn()) return null;
+  try {
+    const p = await apiFetch('/progreso');
+    return p;
+  } catch {
+    return null;
+  }
+}
+
+// ── Auth UI handlers ──
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const errorEl = $('#register-error');
+  errorEl.classList.add('hidden');
+
+  const usuario = $('#reg-usuario').value.trim();
+  const email = $('#reg-email').value.trim();
+  const password = $('#reg-password').value;
+  const confirm = $('#reg-confirm').value;
+
+  if (password !== confirm) {
+    errorEl.textContent = 'Las contraseñas no coinciden';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const data = await apiFetch('/auth/registro', {
+      method: 'POST',
+      body: JSON.stringify({ usuario, email, password }),
+    });
+    saveToken(data.token);
+    userData = { usuario_id: data.usuario_id, usuario: data.usuario };
+    await loadUserData();
+    showScreen('game');
+    startGame();
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.remove('hidden');
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const errorEl = $('#login-error');
+  errorEl.classList.add('hidden');
+
+  const usuario = $('#login-usuario').value.trim();
+  const password = $('#login-password').value;
+
+  try {
+    const data = await apiFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ usuario, password }),
+    });
+    saveToken(data.token);
+    userData = { usuario_id: data.usuario_id, usuario: data.usuario };
+    await loadUserData();
+    showScreen('game');
+    startGame();
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.remove('hidden');
+  }
+}
+
+function handleLogout() {
+  clearAuth();
+  unlockedAchievements.clear();
+  showScreen('welcome');
+}
+
+async function loadUserData() {
+  if (!isLoggedIn()) return;
+  const el = $('#user-info');
+  const nameEl = $('#user-name');
+  el.classList.remove('hidden');
+  nameEl.textContent = userData.usuario;
+
+  await loadAchievements();
+  const p = await loadProgress();
+  if (p && p.nivel_actual !== undefined) {
+    state.totalCorrect = p.total_aciertos || 0;
+    state.totalAttempts = p.total_intentos || 0;
+    state.bestStreak = p.mejor_racha || 0;
+    if (p.nivel_actual > 0) {
+      state.currentLevel = p.nivel_actual;
+    }
+  }
+}
+
+function startGame() {
+  if (isLoggedIn() && state.currentLevel > 0) {
+    initGameAtLevel(state.currentLevel);
+  } else {
+    initGame();
+  }
+}
+
+// ── Guest mode ──
+
+function startGuest() {
+  userData = null;
+  token = null;
+  showScreen('game');
+  initGame();
+}
+
+// ── Achievements view ──
+
+function renderAchievements() {
+  const grid = $('#achievements-grid');
+  grid.innerHTML = '';
+  let unlockedCount = 0;
+  const total = Object.keys(ACHIEVEMENTS).length;
+
+  for (const [clave, def] of Object.entries(ACHIEVEMENTS)) {
+    const unlocked = isLoggedIn() && unlockedAchievements.has(clave);
+    if (unlocked) unlockedCount++;
+    const card = document.createElement('div');
+    card.className = 'achievement-card' + (unlocked ? ' unlocked' : ' locked');
+    card.innerHTML = '<div class="achievement-icon">' + (unlocked ? def.icono : '🔒') + '</div><div class="achievement-info"><div class="achievement-name">' + def.nombre + '</div><div class="achievement-desc">' + def.desc + '</div></div>';
+    grid.appendChild(card);
+  }
+
+  const countEl = $('#achievements-count');
+  countEl.textContent = unlockedCount + ' / ' + total + (isLoggedIn() ? '' : ' (inicia sesión para guardarlos)');
+}
+
+// ── Event listeners ──
 
 function onPressStart(e) {
   if (e) e.preventDefault();
@@ -364,8 +731,24 @@ btn.addEventListener('touchend', onPressEnd, { passive: false });
 btn.addEventListener('touchcancel', onPressEnd, { passive: false });
 
 flipBtn.addEventListener('click', toggleFlip);
-
 card.addEventListener('click', toggleFlip);
+
+$('#btn-show-login').addEventListener('click', () => showScreen('login'));
+$('#btn-show-register').addEventListener('click', () => showScreen('register'));
+$('#btn-back-welcome-from-login').addEventListener('click', () => showScreen('welcome'));
+$('#btn-back-welcome-from-register').addEventListener('click', () => showScreen('welcome'));
+$('#btn-guest').addEventListener('click', startGuest);
+$('#btn-logout').addEventListener('click', handleLogout);
+$('#btn-achievements').addEventListener('click', () => {
+  renderAchievements();
+  showScreen('achievements');
+});
+$('#btn-back-game-from-achievements').addEventListener('click', () => showScreen('game'));
+
+$('#form-register').addEventListener('submit', handleRegister);
+$('#form-login').addEventListener('submit', handleLogin);
+
+// ── Theme ──
 
 const themeToggle = $('#theme-toggle');
 
@@ -396,4 +779,17 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
   }
 });
 
-initGame();
+// ── Init ──
+
+async function boot() {
+  const loggedIn = await tryAutoLogin();
+  if (loggedIn) {
+    await loadUserData();
+    showScreen('game');
+    startGame();
+  } else {
+    showScreen('welcome');
+  }
+}
+
+boot();

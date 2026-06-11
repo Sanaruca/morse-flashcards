@@ -9,40 +9,105 @@
 </head>
 <body>
   <div id="app">
-    <div id="progress-container">
-      <div id="progress-bar"></div>
+    <!-- Welcome screen -->
+    <div id="screen-welcome" class="screen">
+      <div class="auth-container">
+        <h1 class="auth-title">Morse Flashcards</h1>
+        <p class="auth-subtitle">Aprende código Morse</p>
+        <div class="auth-buttons">
+          <button class="auth-btn primary" id="btn-show-login">Iniciar Sesión</button>
+          <button class="auth-btn primary" id="btn-show-register">Registrarse</button>
+          <button class="auth-btn secondary" id="btn-guest">Jugar como Invitado</button>
+        </div>
+      </div>
     </div>
 
-    <header>
-      <h1>Morse</h1>
-      <div class="header-right">
-        <button id="theme-toggle" aria-label="Cambiar modo"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
-        <span id="level-indicator">Nivel 1</span>
+    <!-- Login screen -->
+    <div id="screen-login" class="screen hidden">
+      <div class="auth-container">
+        <h2 class="auth-title">Iniciar Sesión</h2>
+        <form id="form-login" class="auth-form">
+          <input type="text" id="login-usuario" class="auth-input" placeholder="Usuario" required autocomplete="username">
+          <input type="password" id="login-password" class="auth-input" placeholder="Contraseña" required autocomplete="current-password">
+          <div id="login-error" class="auth-error hidden"></div>
+          <button type="submit" class="auth-btn primary">Entrar</button>
+        </form>
+        <button class="auth-btn link" id="btn-back-welcome-from-login">← Volver</button>
       </div>
-    </header>
+    </div>
 
-    <main>
-      <div id="card">
-        <div class="card-face card-front">
-          <div class="flip-hint">↺</div>
-          <div id="card-letter"></div>
-          <div id="input-display"></div>
-          <div id="correct-morse" class="hidden"></div>
+    <!-- Register screen -->
+    <div id="screen-register" class="screen hidden">
+      <div class="auth-container">
+        <h2 class="auth-title">Crear Cuenta</h2>
+        <form id="form-register" class="auth-form">
+          <input type="text" id="reg-usuario" class="auth-input" placeholder="Usuario" required autocomplete="username">
+          <input type="email" id="reg-email" class="auth-input" placeholder="Email" required autocomplete="email">
+          <input type="password" id="reg-password" class="auth-input" placeholder="Contraseña (mín. 6 caracteres)" required autocomplete="new-password">
+          <input type="password" id="reg-confirm" class="auth-input" placeholder="Confirmar contraseña" required autocomplete="new-password">
+          <div id="register-error" class="auth-error hidden"></div>
+          <button type="submit" class="auth-btn primary">Crear Cuenta</button>
+        </form>
+        <button class="auth-btn link" id="btn-back-welcome-from-register">← Volver</button>
+      </div>
+    </div>
+
+    <!-- Game screen -->
+    <div id="screen-game" class="screen hidden">
+      <div id="game-header">
+        <div id="progress-container">
+          <div id="progress-bar"></div>
         </div>
-        <div class="card-face card-back">
-          <div class="back-label">Respuesta</div>
-          <div id="card-answer"></div>
+
+        <header>
+          <h1>Morse</h1>
+          <div class="header-right">
+            <span id="user-info" class="hidden">
+              <span id="user-name" class="user-badge"></span>
+              <button id="btn-achievements" class="icon-btn" title="Ver logros">🏆</button>
+              <button id="btn-logout" class="icon-btn" title="Cerrar sesión">🚪</button>
+            </span>
+            <button id="theme-toggle" aria-label="Cambiar modo"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+            <span id="level-indicator">Nivel 1</span>
+          </div>
+        </header>
+      </div>
+
+      <main>
+        <div id="card">
+          <div class="card-face card-front">
+            <div class="flip-hint">↺</div>
+            <div id="card-letter"></div>
+            <div id="input-display"></div>
+            <div id="correct-morse" class="hidden"></div>
+          </div>
+          <div class="card-face card-back">
+            <div class="back-label">Respuesta</div>
+            <div id="card-answer"></div>
+          </div>
         </div>
+
+        <button id="flip-btn">↺ Ver respuesta</button>
+
+        <div id="telegraph-btn">
+          <span id="btn-label">PULSA</span>
+        </div>
+
+        <p id="instruction">Presiona la barra espaciadora o el botón para enviar código Morse. Pulsación corta = punto (·), pulsación larga = raya (—).</p>
+      </main>
+    </div>
+
+    <!-- Achievements screen -->
+    <div id="screen-achievements" class="screen hidden">
+      <div class="achievements-container">
+        <div class="achievements-header">
+          <h2>Logros</h2>
+          <span id="achievements-count" class="achievements-count"></span>
+        </div>
+        <div id="achievements-grid" class="achievements-grid"></div>
+        <button class="auth-btn secondary" id="btn-back-game-from-achievements">← Volver al juego</button>
       </div>
-
-      <button id="flip-btn">↺ Ver respuesta</button>
-
-      <div id="telegraph-btn">
-        <span id="btn-label">PULSA</span>
-      </div>
-
-      <p id="instruction">Presiona la barra espaciadora o el botón para enviar código Morse. Pulsación corta = punto (·), pulsación larga = raya (—).</p>
-    </main>
+    </div>
   </div>
   <script src="script.js"></script>
 </body>

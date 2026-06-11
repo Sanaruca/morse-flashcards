@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: morse_flashcards
+      POSTGRES_USER: morse
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-morse_secret_123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U morse -d morse_flashcards"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: morse
+      DB_PASSWORD: ${DB_PASSWORD:-morse_secret_123}
+      DB_NAME: morse_flashcards
+      JWT_SECRET: ${JWT_SECRET:-supersecretkey}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
