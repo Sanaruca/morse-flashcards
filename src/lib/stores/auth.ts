@@ -27,6 +27,7 @@ export async function initAuth() {
 		loading.set(false);
 		return;
 	}
+	setApiToken(saved);
 	try {
 		const data = await apiFetch<UserData>('/auth/yo');
 		saveToken(saved);
