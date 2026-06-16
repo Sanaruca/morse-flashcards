@@ -6,12 +6,21 @@
 	import TelegraphButton from '$lib/components/TelegraphButton.svelte';
 	import AchievementToast from '$lib/components/AchievementToast.svelte';
 	import { isLoggedIn, logout } from '$lib/stores/auth';
-	import { currentLevel, currentCard, isLocked, hasCorrectAnswer, isEvaluating, getCorrectMorse, toggleFlip, pressStart, pressEnd } from '$lib/stores/game';
+	import { currentLevel, currentCard, isLocked, hasCorrectAnswer, isEvaluating, getCorrectMorse, toggleFlip, pressStart, pressEnd, loadProgress, setGameStateFromProgress, initGame } from '$lib/stores/game';
 
-	onMount(() => {
+	onMount(async () => {
 		if ($currentLevel === undefined) {
-			goto('/');
-			return;
+			if ($isLoggedIn) {
+				const p = await loadProgress();
+				if (p && typeof p.nivel_actual === 'number') {
+					setGameStateFromProgress(p);
+				} else {
+					initGame();
+				}
+			} else {
+				goto('/');
+				return;
+			}
 		}
 		document.addEventListener('keydown', handleKeydown);
 		document.addEventListener('keyup', handleKeyup);

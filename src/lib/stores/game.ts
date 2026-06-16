@@ -259,7 +259,7 @@ export function setGameStateFromProgress(p: any) {
 	totalCorrect.set(p.total_aciertos || 0);
 	totalAttempts.set(p.total_intentos || 0);
 	bestStreak.set(p.mejor_racha || 0);
-	if (p.nivel_actual > 0) {
+	if (typeof p.nivel_actual === 'number') {
 		initGameAtLevel(p.nivel_actual);
 	}
 }
