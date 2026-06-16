@@ -218,14 +218,12 @@ function showVictory() {
 	}
 }
 
-export function getCorrectMorse(): string {
-	const card = get(currentCard);
+export function getCorrectMorse(card: string | null): string {
 	if (!card) return '';
 	return formatMorse(MORSE_CODE[card]);
 }
 
-export function getCardAnswer(): string[] {
-	const card = get(currentCard);
+export function getCardAnswer(card: string | null): string[] {
 	if (!card) return [];
 	return MORSE_CODE[card].split('');
 }

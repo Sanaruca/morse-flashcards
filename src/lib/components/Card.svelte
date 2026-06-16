@@ -7,8 +7,8 @@
 		onflip?: () => void;
 	} = $props();
 
-	let cardAnswer = $derived(getCardAnswer());
-	let correctMorse = $derived(getCorrectMorse());
+	let cardAnswer = $derived(getCardAnswer($currentCard));
+	let correctMorse = $derived(getCorrectMorse($currentCard));
 
 	let cardClass = $derived.by(() => {
 		let cls = '';

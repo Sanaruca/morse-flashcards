@@ -21,7 +21,7 @@
 		};
 	});
 
-	let correctMorse = $derived(getCorrectMorse());
+	let correctMorse = $derived(getCorrectMorse($currentCard));
 
 	let instruction = $derived.by(() => {
 		if ($isLocked && $hasCorrectAnswer) return '¡Correcto!';
