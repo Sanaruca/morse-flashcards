@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { notifications } from '$lib/stores/achievements';
+	import AchievementIcon from '$lib/components/AchievementIcon.svelte';
 </script>
 
 {#each $notifications as n (n.clave)}
 	<div class="achievement-toast show" aria-live="polite">
-		<div class="toast-icon">{n.icono}</div>
+		<div class="toast-icon">
+			<AchievementIcon icon={n.icono} />
+		</div>
 		<div class="toast-text">
 			<div class="toast-label">{'¡'}Logro desbloqueado!</div>
 			<div class="toast-name">{n.nombre}</div>
@@ -37,7 +40,15 @@
 	}
 
 	.toast-icon {
-		font-size: 1.8rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #fbbf24;
+	}
+
+	.toast-icon :global(svg) {
+		width: 28px;
+		height: 28px;
 	}
 
 	.toast-label {

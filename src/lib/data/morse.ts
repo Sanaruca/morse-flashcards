@@ -30,16 +30,16 @@ export interface AchievementDef {
 }
 
 export const ACHIEVEMENTS: Record<string, AchievementDef> = {
-	primer_nivel:    { nombre: 'Primeros Pasos',     desc: 'Completa el Nivel 1',               icono: '🌟' },
-	nivel_2:         { nombre: 'En Progreso',         desc: 'Completa el Nivel 2',               icono: '📈' },
-	nivel_3:         { nombre: 'Comunicador',         desc: 'Completa el Nivel 3',               icono: '🗣️' },
-	nivel_4:         { nombre: 'Experto',             desc: 'Completa el Nivel 4',               icono: '🎯' },
-	nivel_5:         { nombre: 'Casi un Maestro',     desc: 'Completa el Nivel 5',               icono: '🔝' },
-	todos_niveles:   { nombre: 'Gran Maestro Morse',  desc: 'Completa todos los niveles',        icono: '🏆' },
-	racha_5:         { nombre: 'Racha',               desc: '5 aciertos seguidos',               icono: '🔥' },
-	racha_10:        { nombre: 'Imparable',           desc: '10 aciertos seguidos',              icono: '⚡' },
-	nivel_perfecto:  { nombre: 'Perfecto',            desc: 'Completa un nivel sin errores',     icono: '💎' },
-	primer_acierto:  { nombre: 'Primer Intento',      desc: 'Acierta tu primera letra',          icono: '🎯' },
+	primer_nivel:    { nombre: 'Primeros Pasos',     desc: 'Completa el Nivel 1',               icono: 'star' },
+	nivel_2:         { nombre: 'En Progreso',         desc: 'Completa el Nivel 2',               icono: 'trending-up' },
+	nivel_3:         { nombre: 'Comunicador',         desc: 'Completa el Nivel 3',               icono: 'message-circle' },
+	nivel_4:         { nombre: 'Experto',             desc: 'Completa el Nivel 4',               icono: 'crosshair' },
+	nivel_5:         { nombre: 'Casi un Maestro',     desc: 'Completa el Nivel 5',               icono: 'arrow-up-to-line' },
+	todos_niveles:   { nombre: 'Gran Maestro Morse',  desc: 'Completa todos los niveles',        icono: 'trophy' },
+	racha_5:         { nombre: 'Racha',               desc: '5 aciertos seguidos',               icono: 'flame' },
+	racha_10:        { nombre: 'Imparable',           desc: '10 aciertos seguidos',              icono: 'zap' },
+	nivel_perfecto:  { nombre: 'Perfecto',            desc: 'Completa un nivel sin errores',     icono: 'gem' },
+	primer_acierto:  { nombre: 'Primer Intento',      desc: 'Acierta tu primera letra',          icono: 'award' },
 };
 
 export function formatMorse(code: string): string {

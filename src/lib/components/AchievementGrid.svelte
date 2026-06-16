@@ -2,6 +2,7 @@
 	import { ACHIEVEMENTS } from '$lib/data/morse';
 	import { unlocked } from '$lib/stores/achievements';
 	import { isLoggedIn } from '$lib/stores/auth';
+	import AchievementIcon from '$lib/components/AchievementIcon.svelte';
 
 	let entries = $derived(Object.entries(ACHIEVEMENTS));
 
@@ -25,7 +26,9 @@
 		{#each entries as [clave, def]}
 			{@const u = $isLoggedIn && $unlocked.has(clave)}
 			<div class="achievement-card" class:unlocked={u} class:locked={!u}>
-				<div class="achievement-icon">{u ? def.icono : '🔒'}</div>
+				<div class="achievement-icon">
+					<AchievementIcon icon={u ? def.icono : 'lock'} />
+				</div>
 				<div class="achievement-info">
 					<div class="achievement-name">{def.nombre}</div>
 					<div class="achievement-desc">{def.desc}</div>
@@ -90,10 +93,19 @@
 	}
 
 	.achievement-icon {
-		font-size: 2rem;
 		width: 48px;
-		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex-shrink: 0;
+	}
+
+	.achievement-icon :global(svg) {
+		color: var(--text-primary);
+	}
+
+	.achievement-card.locked .achievement-icon :global(svg) {
+		color: var(--text-muted);
 	}
 
 	.achievement-info {
