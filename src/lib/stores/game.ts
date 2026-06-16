@@ -102,6 +102,7 @@ function nextCard() {
 	userInput.set('');
 	isEvaluating.set(false);
 	isLocked.set(false);
+	hasCorrectAnswer.set(false);
 	setFlipped(false);
 }
 
@@ -169,6 +170,8 @@ async function handleCorrect() {
 
 function handleError(correct: string) {
 	isLocked.set(true);
+	isEvaluating.set(false);
+	hasCorrectAnswer.set(false);
 	audio.playError();
 
 	currentStreak.set(0);
