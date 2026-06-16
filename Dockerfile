@@ -1,22 +1,15 @@
-FROM golang:1.22-alpine AS builder
-
-RUN apk add --no-cache git
-
-WORKDIR /build
-COPY backend/ .
-RUN go mod tidy && go build -o server .
-
-FROM alpine:3.19
-
-RUN apk add --no-cache ca-certificates
-
+FROM node:22-alpine AS builder
 WORKDIR /app
-COPY --from=builder /build/server .
-COPY index.html .
-COPY script.js .
-COPY style.css .
-COPY fav.ico .
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-EXPOSE 8080
-
-CMD ["./server"]
+FROM node:22-alpine
+WORKDIR /app
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY schema.sql ./schema.sql
+EXPOSE 3000
+CMD ["node", "build"]

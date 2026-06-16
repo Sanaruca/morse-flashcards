@@ -1,4 +1,6 @@
 node_modules/
+.svelte-kit/
+build/
 .DS_Store
 .env
 backend/server
