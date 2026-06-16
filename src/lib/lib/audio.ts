@@ -14,6 +14,7 @@ class MorseAudio {
 	}
 
 	startTone() {
+		if (this.osc) return;
 		this.ensure();
 		const now = this.ctx!.currentTime;
 		this.osc = this.ctx!.createOscillator();

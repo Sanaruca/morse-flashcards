@@ -190,6 +190,7 @@ function handleError(correct: string) {
 
 export function pressStart() {
 	if (get(isLocked) || get(isFlipped)) return;
+	if (pressStartTime) return;
 
 	audio.ensure();
 	pressStartTime = Date.now();
