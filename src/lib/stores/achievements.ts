@@ -7,7 +7,7 @@ import { isLoggedIn } from '$lib/stores/auth';
 import { get } from 'svelte/store';
 
 export const unlocked = writable<Set<string>>(new Set());
-export const notifications = writable<Array<{ clave: string; nombre: string; icono: string }>>([]);
+export const notifications = writable<Array<{ clave: string; nombre: string; icono: string; color: string }>>([]);
 
 export async function loadAchievements() {
 	if (!get(isLoggedIn)) return;
@@ -96,7 +96,7 @@ async function unlockAchievement(clave: string) {
 function showNotification(clave: string) {
 	const a = ACHIEVEMENTS[clave];
 	if (!a) return;
-	const n = { clave, nombre: a.nombre, icono: a.icono };
+	const n = { clave, nombre: a.nombre, icono: a.icono, color: a.color };
 	notifications.update(arr => [...arr, n]);
 	setTimeout(() => {
 		notifications.update(arr => arr.filter(item => item.clave !== clave));

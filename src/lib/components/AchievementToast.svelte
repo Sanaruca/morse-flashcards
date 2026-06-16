@@ -6,7 +6,7 @@
 {#each $notifications as n (n.clave)}
 	<div class="achievement-toast show" aria-live="polite">
 		<div class="toast-icon">
-			<AchievementIcon icon={n.icono} />
+			<AchievementIcon icon={n.icono} color={n.color} />
 		</div>
 		<div class="toast-text">
 			<div class="toast-label">{'¡'}Logro desbloqueado!</div>

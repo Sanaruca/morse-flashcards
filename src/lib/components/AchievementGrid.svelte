@@ -27,7 +27,7 @@
 			{@const u = $isLoggedIn && $unlocked.has(clave)}
 			<div class="achievement-card" class:unlocked={u} class:locked={!u}>
 				<div class="achievement-icon">
-					<AchievementIcon icon={u ? def.icono : 'lock'} />
+					<AchievementIcon icon={u ? def.icono : 'lock'} color={u ? def.color : '#6b7280'} />
 				</div>
 				<div class="achievement-info">
 					<div class="achievement-name">{def.nombre}</div>
@@ -98,14 +98,6 @@
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-	}
-
-	.achievement-icon :global(svg) {
-		color: var(--text-primary);
-	}
-
-	.achievement-card.locked .achievement-icon :global(svg) {
-		color: var(--text-muted);
 	}
 
 	.achievement-info {
