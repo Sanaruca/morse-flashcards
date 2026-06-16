@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { loading as authLoading, isLoggedIn } from '$lib/stores/auth';
+	import { isLoggedIn } from '$lib/stores/auth';
 	import { initGame } from '$lib/stores/game';
 	import { loadAchievements } from '$lib/stores/achievements';
 
-	onMount(() => {
+	$effect(() => {
 		if ($isLoggedIn) {
 			goto('/juego');
 		}
@@ -18,12 +17,7 @@
 	}
 </script>
 
-{#if $authLoading}
-	<div class="screen centered">
-		<p>Cargando...</p>
-	</div>
-{:else}
-	<div class="screen">
+<div class="screen">
 		<div class="welcome-bg">
 			<svg class="deco-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
 				<circle cx="10" cy="10" r="2.5" class="deco-dot" style="--delay: 0s"/>
@@ -81,7 +75,6 @@
 			</div>
 		</div>
 	</div>
-{/if}
 
 <style>
 	.screen {
